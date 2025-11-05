@@ -1,0 +1,543 @@
+<!DOCTYPE html><html lang="ja" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travelight | インタラクティブ事業計画</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #FFFAF0; /* Floral White */
+            color: #4A4A4A;
+        }
+        /* Chart container styles */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; 
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        /* Gradient text style */
+        .gradient-text {
+            background: linear-gradient(to right, #F59E0B, #EC4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Timeline styles */
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2.5rem;
+            padding-left: 2.5rem; 
+        }
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0.25rem; 
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            border: 4px solid white;
+            z-index: 10;
+        }
+        .timeline-line {
+            position: absolute;
+            left: 0.5rem;
+            top: 0.25rem;
+            bottom: -0.25rem;
+            width: 4px;
+            background-color: #FDE68A; /* Amber 200 */
+            z-index: 5;
+        }
+        .timeline-item:last-child .timeline-line {
+            display: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* デフォルトは 'none' (非表示) */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+            /* Flex styles for centering (JavaScriptで 'display: flex' が適用されたときに使われる) */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            margin-top: 20px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style></head><body>
+    
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#top" class="text-3xl font-extrabold gradient-text" id="travelight-home">Travelight</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="#vision" class="text-gray-600 hover:text-amber-600 font-semibold">ホーム</a>
+                <a href="#activities" class="text-gray-600 hover:text-amber-600 font-semibold">活動について</a>
+                <a href="#roadmap" class="text-gray-600 hover:text-amber-600 font-semibold">計画</a>
+                <a href="#dashboard" class="text-gray-600 hover:text-amber-600 font-semibold">私たちが目指す未来</a>
+                <a href="#future-extension" class="text-gray-600 hover:text-amber-600 font-semibold">未来への拡張</a>
+                <a href="#join" class="bg-amber-500 text-white px-5 py-2 rounded-full font-bold hover:bg-amber-600 transition-all shadow-md">Travelightに参加する</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-2">
+            <a href="#vision" class="block text-gray-600 hover:text-amber-600 font-semibold">ホーム</a>
+            <a href="#activities" class="block text-gray-600 hover:text-amber-600 font-semibold">活動について</a>
+            <a href="#roadmap" class="block text-gray-600 hover:text-amber-600 font-semibold">計画</a>
+            <a href="#dashboard" class="block text-gray-600 hover:text-amber-600 font-semibold">私たちが目指す未来</a>
+            <a href="#future-extension" class="block text-gray-600 hover:text-amber-600 font-semibold">未来への拡張</a>
+            <a href="#join" class="block bg-amber-500 text-white px-5 py-2 rounded-full font-bold text-center">Travelightに参加する</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12" id="top">
+
+        <section id="vision" class="text-center py-16 md:py-24">
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-6">
+                <span class="gradient-text">旅行業界</span>に<span class="gradient-text">ライト</span>を当てる。
+            </h2>
+            <p class="text-lg md:text-xl text-gray-700 max-w-3xl mx-auto mb-10">
+                Travelightへようこそ！ 私たちは「旅行業界の発展に貢献し、日本を盛り上げる」という大きなVisionを掲げ、ワクワクする挑戦を始めたチームです 私たちが思い描く設計図を紹介します
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-amber-400">
+                    <h3 class="text-2xl font-bold text-amber-600 mb-3">Our Vision</h3>
+                    <p class="text-lg text-gray-600">旅行業界の発展に貢献し、<br>日本を盛り上げる。</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-sky-400">
+                    <h3 class="text-2xl font-bold text-sky-700 mb-3">Our Mission</h3>
+                    <p class="text-lg text-gray-600">「関東旅行連合」を結成し、<br>地域の活性化を担う存在となる。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="activities" class="py-16">
+            <h2 class="text-5xl font-extrabold text-center mb-16">活動について</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden transition-transform duration-300 hover:scale-105 cursor-pointer" id="urban-game-card">
+                    <div class="p-8">
+                        <span class="text-5xl mb-4 block" role="img" aria-label="City">🏙️</span>
+                        <h3 class="text-3xl font-bold text-gray-800 mb-4">都市ゲーム（イベント）関連</h3>
+                        <p class="text-gray-600 text-base mb-4 text-left">
+                            街全体を舞台にした謎解きやミッションクリア型の「都市ゲーム」を企画・運営。<br>
+                            参加者が楽しみながら地域の隠れた魅力を再発見できる体験を創出します。
+                        </p>
+                        <ul class="list-none space-y-2">
+                            <li class="flex items-center"><span class="text-emerald-500 mr-2">✔</span>参加型イベントの自主開催</li>
+                            <li class="flex items-center"><span class="text-emerald-500 mr-2">✔</span>自治体・企業との連携</li>
+                            <li class="flex items-center"><span class="text-emerald-500 mr-2">✔</span>将来的なオリジナルアプリ開発</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gradient-to-r from-amber-400 to-pink-500 h-2 w-full"></div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden transition-transform duration-300 hover:scale-105">
+                    <div class="p-8">
+                        <span class="text-5xl mb-4 block" role="img" aria-label="Mountain">🏞️</span>
+                        <h3 class="text-3xl font-bold text-gray-800 mb-4">地方創生関連</h3>
+                        <p class="text-gray-600 text-base mb-4 text-left">
+                            地域の「人」と「魅力」に光を当てます。オンライン・オフラインのイベントや<br>
+                            動画コンテンツを通じて、地域のファンを増やしていきます。
+                        </p>
+                        <ul class="list-none space-y-2">
+                            <li class="flex items-center"><span class="text-emerald-500 mr-2">✔</span>魅力共有イベント（座談会・セミナー）</li>
+                            <li class="flex items-center"><span class="text-emerald-500 mr-2">✔</span>知的好奇心をくすぐる動画制作</li>
+                            <li class="flex items-center"><span class="text-emerald-500 mr-2">✔</span>「ブラタモリ」風の体験ツアー企画</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gradient-to-r from-sky-400 to-emerald-500 h-2 w-full"></div>
+                </div>
+            </div>
+        </section>
+
+        <div id="videoModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h3 class="text-2xl font-bold text-center mb-4">東京都使って壮大な脱出ゲームしてみた</h3>
+                <div class="video-container">
+                    <iframe id="youtubeVideo" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="https://youtu.be/Hu6qpXkTCqE" target="_blank" class="text-sm font-semibold text-amber-600 hover:text-amber-800 transition duration-150 inline-flex items-center">
+                        外部サイトで動画を視聴
+                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <section id="roadmap" class="py-16">
+            <h2 class="text-4xl font-extrabold text-center mb-6">1年間のロードマップ</h2>
+            <p class="text-lg text-center text-gray-700 max-w-2xl mx-auto mb-16">
+                この壮大な計画を、着実に実現するための1年間のロードマップです。私たちはこのステップを駆け上がり、「やれそう感」を「やり遂げた」という自信に変えていきます。
+            </p>
+
+            <div class="max-w-3xl mx-auto">
+                <div class="relative">
+                    <div class="timeline-line"></div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-dot bg-amber-500"></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-500">
+                            <h3 class="text-xl font-bold text-amber-600 mb-2">【第1四半期】基盤構築フェーズ</h3>
+                            <p class="text-gray-600">
+                                最初の仲間とチームを組み、活動の土台を固めます。「都市ゲーム」を自主開催して最初の実績を作り、WebサイトやSNSで発信を開始します。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot bg-sky-500"></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-sky-500">
+                            <h3 class="text-xl font-bold text-sky-700 mb-2">【第2四半期】仕掛けるフェーズ</h3>
+                            <p class="text-gray-600">
+                                チームとして本格始動。イベントを「月次開催」できる仕組みに移行し、「初の有償案件（自治体連携）」の実現を目指して本格的な営業を開始します。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot bg-emerald-500"></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-emerald-500">
+                            <h3 class="text-xl font-bold text-emerald-600 mb-2">【第3四半期】拡大フェーズ</h3>
+                            <p class="text-gray-600">
+                                有償案件の比率をさらに高め、活動の安定性を強化します。同時に、私たちの活動全体を支援してくれる「団体スポンサー」獲得に向けた営業活動も開始します。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot bg-pink-500"></div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-pink-500">
+                            <h3 class="text-xl font-bold text-pink-600 mb-2">【第4四半期】多角化フェーズ</h3>
+                            <p class="text-gray-600">
+                                次のステージへ。セミナーなども商材化し、活動の柱を増やします。来年度の案件を確定させ、「Webアプリ」や「ECサイト」の本格開発体制を構築します。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="py-16">
+            <h2 class="text-4xl font-extrabold text-center mb-6">私たちが目指す未来</h2>
+            <p class="text-lg text-center text-gray-700 max-w-2xl mx-auto mb-16">
+                このロードマップが、単なる計画ではないことを視覚化しました。1年間の活動を通じて、私たちのフォーカスがどう進化し、どんな「資産」を手にするのかをご紹介します。
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">四半期ごとの活動フォーカス</h3>
+                    <p class="text-gray-600 text-center text-sm mb-6">
+                        このチャートは、1年間で私たちの活動の軸がどう進化するかを示しています。最初は「基盤構築」が100%ですが、四半期ごとに「営業・有償案件」の比率が高まり、最終的には「新規事業」へと繋がっていきます。
+                    </p>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="focusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">1年後に手にする「資産」</h3>
+                     <p class="text-gray-600 text-center text-sm mb-6">
+                        1年後、私たちは単なるイベントチームではありません。このチャートが示すように、「複数の有償案件」という安定基盤の上で、「アプリ・EC開発体制」や「次年度への飛躍」といった未来への投資を実現した、強力なチームへと成長します。
+                    </p>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="assetChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16" id="future-extension">
+                <h3 class="text-4xl font-bold text-center text-gray-800 mb-12">未来への拡張</h3>
+                <p class="text-lg text-center text-gray-700 max-w-2xl mx-auto mb-12">
+                    1年間の活動は、さらに大きな未来へのステップです。イベント運営や案件で得たノハウと実績を元に、私たちはこれらの領域へと拡張していきます。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center border-b-4 border-pink-500">
+                        <span class="text-4xl mb-3 block" role="img" aria-label="App">📱</span>
+                        <h4 class="text-2xl font-bold text-pink-700 mb-3">アプリ開発</h4>
+                        <p class="text-gray-600">都市ゲームをさらに進化させる、私たち独自のオリジナルアプリを開発し、新しい体験を提供します。</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center border-b-4 border-sky-500">
+                        <span class="text-4xl mb-3 block" role="img" aria-label="E-commerce">🛒</span>
+                        <h4 class="text-2xl font-bold text-sky-700 mb-3">ECサイト</h4>
+                        <p class="text-gray-600">地方の魅力的な物産を、私たちが構築したファンコミュニティに直接届けるECサイトを立ち上げます。</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center border-b-4 border-emerald-500">
+                        <span class="text-4xl mb-3 block" role="img" aria-label="Consulting">📊</span>
+                        <h4 class="text-2xl font-bold text-emerald-600 mb-3">コンサルティング</h4>
+                        <p class="text-gray-600">私たちが培った「地域の魅力を発掘し、発信するノハウ」を活かし、地域の課題を解決するパートナーとなります。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="join" class="py-20 bg-gradient-to-r from-amber-500 to-pink-500 rounded-xl text-center">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-6">「最初の仲間」になりませんか？</h2>
+            <p class="text-xl md:text-2xl text-white max-w-3xl mx-auto mb-10">
+                Travelightはまだ始まったばかり。<br>
+                だからこそ、参加する皆さん全員が主役です。<br>
+                あなたの「好き」や「得意」を活かせる場所が、ここに必ずあります。
+            </p>
+            <div class="flex flex-wrap justify-center gap-3 px-6 max-w-3xl mx-auto mb-10">
+                <span class="bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-full">企画</span>
+                <span class="bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-full">営業</span>
+                <span class="bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-full">イベント運営</span>
+                <span class="bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-full">情報発信・SNS</span>
+                <span class="bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-full">アプリ開発</span>
+                <span class="bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-full">動画制作</span>
+                <span class="bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-full">デザイン</span>
+            </div>
+            <p class="text-xl text-white max-w-3xl mx-auto mb-10 font-bold">
+                「まずは何ができるか分からないけど、面白そう！」という情熱がある方の参加も大歓迎です！
+            </p>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScQLsbcAdQp6EUY7-gZim0enb9MNrbSnzG9humXLt49BVS9Uw/viewform?usp=header" target="_blank" class="bg-white text-amber-600 text-2xl px-10 py-4 rounded-full font-bold hover:bg-gray-100 transition-all shadow-lg transform hover:scale-105 inline-block">
+                Travelightに参加する
+            </a>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 mt-12 border-t border-gray-200">
+        <p class="text-gray-500">&copy; Travelight. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Chart.js Tooltip Configuration
+        const tooltipCallback = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                              return label.join(' ');
+                            } else {
+                              return label;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Chart 1: Focus Chart (Stacked Bar)
+        const focusCtx = document.getElementById('focusChart').getContext('2d');
+        const focusChart = new Chart(focusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['第1四半期', '第2四半期', '第3四半期', '第4四半期'],
+                datasets: [
+                    {
+                        label: '基盤構築 (イベント・チーム)',
+                        data: [10, 3, 1, 1],
+                        backgroundColor: '#FDE68A', // Amber 200
+                    },
+                    {
+                        label: '営業・有償案件',
+                        data: [0, 7, 8, 7],
+                        backgroundColor: '#60A5FA', // Blue 400
+                    },
+                    {
+                        label: '新規事業 (アプリ・EC)',
+                        data: [0, 0, 1, 2],
+                        backgroundColor: '#F472B6', // Pink 400
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                        ticks: {
+                            display: false
+                        },
+                        grid: {
+                            drawBorder: false,
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    ...tooltipCallback.plugins,
+                    tooltip: {
+                        ...tooltipCallback.plugins.tooltip,
+                        callbacks: {
+                            ...tooltipCallback.plugins.tooltip.callbacks,
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + ' (相対比)';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Asset Chart (Doughnut)
+        const assetCtx = document.getElementById('assetChart').getContext('2d');
+        const assetChart = new Chart(assetCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['複数の有償案件', 'アプリ・EC開発体制', '次年度への飛躍'],
+                datasets: [{
+                    label: '1年後の資産構成',
+                    data: [50, 30, 20],
+                    backgroundColor: [
+                        '#34D399', // Emerald 400
+                        '#F472B6', // Pink 400
+                        '#FDE68A'  // Amber 200
+                    ],
+                    borderColor: '#FFFAF0',
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    ...tooltipCallback.plugins,
+                }
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Smooth scroll for all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const hash = this.hash;
+
+                // Handle #top link to go to page top
+                if (hash === '#top') {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    return;
+                }
+                
+                const target = document.querySelector(hash);
+                
+                if (target) {
+                    const headerOffset = document.querySelector('header').offsetHeight;
+                    const elementPosition = target.offsetTop;
+                    const offsetPosition = elementPosition - headerOffset - 20; // 20px offset
+                    
+                    window.scrollTo({
+                        top: offsetPosition < 0 ? 0 : offsetPosition, // Prevent scrolling above top
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+
+        // Modal functionality for urban game card
+        const urbanGameCard = document.getElementById('urban-game-card');
+        const videoModal = document.getElementById('videoModal');
+        const closeModalButton = document.querySelector('#videoModal .close-button');
+        const youtubeVideo = document.getElementById('youtubeVideo');
+        // New YouTube embed URL
+        const videoSrc = "https://www.youtube.com/embed/Hu6qpXkTCqE";
+
+        urbanGameCard.addEventListener('click', function() {
+            videoModal.style.display = "flex"; // Show modal
+            // Load video and add autoplay parameter when modal opens
+            youtubeVideo.src = videoSrc + "?autoplay=1";
+        });
+
+        function stopVideo() {
+             videoModal.style.display = "none"; // Hide modal
+            // Stop video playback by setting src to empty
+            youtubeVideo.src = "";
+        }
+
+        closeModalButton.addEventListener('click', stopVideo);
+
+        // Close modal when clicking outside of the modal content
+        window.addEventListener('click', function(event) {
+            if (event.target == videoModal) {
+                stopVideo();
+            }
+        });
+    </script></body></html>
